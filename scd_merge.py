@@ -15,13 +15,13 @@ Example
 >>> df_source                   >>> df_target
      customer  credit_score          customer  original_credit_score
 0   C00000001           730     0   C00000001                    630
-1   C00000001           480     1   C00000001                    520
+1   C00000002           480     1   C00000002                    520
 
 >>> scd_merge(df_source, df_target)
 
      customer  original_credit_score
 0   C00000001                    630
-1   C00000001                    520
+1   C00000002                    520
 
 Note: Though df_source has new values for credit_score, function retains the value found in df_target. Function also relabels the column as it is passed from df_source, signifying it is SCD0
 
@@ -39,13 +39,13 @@ Example
 >>> df_source                   >>> df_target
      customer  credit_score          customer  current_credit_score
 0   C00000001           730     0   C00000001                   630
-1   C00000001           480     1   C00000001                   520
+1   C00000002           480     1   C00000002                   520
 
 >>> scd_merge(df_source, df_target)
 
      customer  current_credit_score
 0   C00000001                   730
-1   C00000001                   480
+1   C00000002                   480
 
 Note: New values for credit score in df_source overwrite the value found in df_target. merge function assigns a tag to the column signifying SCD1 cahracter 'current_'
 
@@ -66,15 +66,15 @@ Example
 >>> df_source                   >>> df_target
      customer  credit_score          customer  effective_from  effective_to  is_current  credit_score
 0   C00000001           730     0   C00000001      2022-01-01    9999-12-31           1           630
-1   C00000001           480     1   C00000001      2022-01-01    9999-12-31           1           520
+1   C00000002           480     1   C00000002      2022-01-01    9999-12-31           1           520
 
 >>> scd_merge(df_source, df_target) // date of merge in example is 2022-01-31
 
      customer  effective_from  effective_to  is_current  credit_score
 0   C00000001      2022-01-01    2022-01-30           0           630
 1   C00000001      2022-01-31    9999-12-31           1           730
-2   C00000001      2022-01-01    9999-12-31           0           520
-3   C00000001      2022-01-01    9999-12-31           1           480
+2   C00000002      2022-01-01    9999-12-31           0           520
+3   C00000002      2022-01-01    9999-12-31           1           480
 
 Type 3: Add New Attribute
 -------------------------
@@ -84,6 +84,22 @@ type 3 change is sometimes called an alternate reality. A business user can grou
 ﬁlter fact data by either the current value or alternate reality. This slowly changing 
 dimension technique is used relatively infrequently.
 
+Example
+-------
+>>> df_source                   >>> df_target
+     customer  credit_score          customer credit_score  credit_score_alternate
+0   C00000001           730     0   C00000001          630                    null
+1   C00000002           480     1   C00000002          520                    null
+
+>>> scd_merge(df_source, df_target) // date of merge in example is 2022-01-31
+
+     customer credit_score  credit_score_alternate
+0   C00000001          730                     630                     
+1   C00000002          480                     520        
+
+Note: does this keep going? should we KEEP adding columns?
+
+
 Type 4: Add Mini-Dimension
 --------------------------
 The type 4  technique is used when a group of attributes in a dimension rapidly 
@@ -92,7 +108,9 @@ rapidly changing monster dimension. Frequently used attributes in multimillion-r
 dimension tables are mini-dimension design candidates, even if they don't fre-
 quently change. The type 4 mini-dimension requires its own unique primary key; 
 the primary keys of both the base dimension and mini-dimension are captured in 
-the associated fact tables. 
+the associated fact tables.
+
+
 
 Type 5: Add Mini-Dimention and Type 1 Outrigger
 -----------------------------------------------
