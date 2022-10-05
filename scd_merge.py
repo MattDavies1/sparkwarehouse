@@ -13,6 +13,7 @@ attributes in a date dimension.
 Example
 -------
 >>> df_source                   >>> df_target
+
      customer  credit_score          customer  original_credit_score
 0   C00000001           730     0   C00000001                    630
 1   C00000002           480     1   C00000002                    520
@@ -37,6 +38,7 @@ tables and OLAP cubes affected by this change are recomputed.
 Example
 -------
 >>> df_source                   >>> df_target
+
      customer  credit_score          customer  current_credit_score
 0   C00000001           730     0   C00000001                   630
 1   C00000002           480     1   C00000002                   520
@@ -64,6 +66,7 @@ date or date/time stamp; and 3) current row indicator.
 Example
 -------
 >>> df_source                   >>> df_target
+
      customer  credit_score          customer  effective_from  effective_to  is_current  credit_score
 0   C00000001           730     0   C00000001      2022-01-01    9999-12-31           1           630
 1   C00000002           480     1   C00000002      2022-01-01    9999-12-31           1           520
@@ -87,6 +90,7 @@ dimension technique is used relatively infrequently.
 Example
 -------
 >>> df_source                   >>> df_target
+
      customer  credit_score          customer credit_score  credit_score_alternate
 0   C00000001           730     0   C00000001          630                    null
 1   C00000002           480     1   C00000002          520                    null
@@ -110,8 +114,6 @@ quently change. The type 4 mini-dimension requires its own unique primary key;
 the primary keys of both the base dimension and mini-dimension are captured in 
 the associated fact tables.
 
-
-
 Type 5: Add Mini-Dimention and Type 1 Outrigger
 -----------------------------------------------
 The type 5  technique is used to accurately preserve historical attribute values, 
@@ -133,6 +135,22 @@ values. Type 6 builds on the type 2 technique by also embedding current type
 ment occurred or the attribute's current value. In this case, the type 1 attribute is 
 systematically overwritten on all rows associated with a particular durable key 
 whenever the attribute is updated. 
+
+Example
+-------
+>>> df_source                   >>> df_target
+
+     customer  credit_score          customer  effective_from  effective_to  is_current  credit_score_current  credit_score_historical
+0   C00000001           730     0   C00000001      2022-01-01    9999-12-31           1                   630                      630                         
+1   C00000002           480     1   C00000002      2022-01-01    9999-12-31           1                   520                      520                         
+
+>>> scd_merge(df_source, df_target) // date of merge in example is 2022-01-31
+
+     customer  effective_from  effective_to  is_current  credit_score_current  credit_score_historical
+0   C00000001      2022-01-01    2022-01-30           0                   730                      630
+1   C00000001      2022-01-31    9999-12-31           1                   730                      730
+2   C00000002      2022-01-01    9999-12-31           0                   480                      520
+3   C00000002      2022-01-01    9999-12-31           1                   480                      480
 
 Type 7: Dual Type 1 and Type 2 Dimensions
 -----------------------------------------
